@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Popular Movies Stage 1</string>
+    <string name="sort_most_popular">Sort Most Popular</string>
+    <string name="sort_highest_rated">Sort Highest Rated</string>
+    <string name="no_connection_established">No connection established</string>
+    <string name="summary_of_movie_plot">Summary of movie plot</string>
+    <string name="_10">/10</string>
+    <string name="year">Year</string>
+    <string name="title">Title</string>
+    <string name="review_of_movie">Review of Movie</string>
+</resources>
