@@ -4,10 +4,17 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.URL;
 
@@ -16,8 +23,25 @@ import java.net.URL;
 
 public class Details extends AppCompatActivity {
 
-    private static final String BASE_URL = "https://image.tmdb.org/t/p/w185";
+    private LinearLayout mTrailerList;
+    private LinearLayout mReviewList;
+    private String mId;
 
+    private final String PARAM_RESULTS = "results";
+    private final String PARAM_KEY = "key";
+    private final String PARAM_NAME = "name";
+
+    private final String PARAM_AUTHOR = "author";
+    private final String PARAM_CONTENT = "content";
+
+    private String[] mTrailerKeys;
+    private String[] mTrailerNames;
+    private String[] mReviewAuthors;
+    private String[] mReviewContent;
+
+    private int reviewCounter;
+
+    private static final String BASE_URL = "https://image.tmdb.org/t/p/w185";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,21 +62,80 @@ public class Details extends AppCompatActivity {
         vote.setText(voteAverage);
         TextView overview = findViewById(R.id.summary_text_view);
         overview.setText(movie.getOverview());
-        TextView review = findViewById(R.id.reviews_text_view);
-        review.setText(movie.getReview());
+        mId = movie.getString(getString(R.string.movie_id));
+        reviewCounter = 0;
+
+        new FetchReviewsTask().execute();
 
     }
 
-    //public class FetchReviewTask extends AsyncTask<String, Void, String>{
-        //@Override
-       // protected String doInBackground(String... strings){
-         //   try {
-           //     URL reviewsRequestUrl = NetworkUtils.buildReviewUrl(mId);
-             //   return NetworkUtils.getResponseFromHttpUrl(reviewsRequestUrl);
-           // } catch (Exception e) {
-             //   e.printStackTrace();
-               // return null;
-           // }
-       // }
-  //  }
+    // ASYNC Task for Reviews
+
+    public class FetchReviewsTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... strings) {
+            try {
+                URL reviewsRequestUrl = NetworkUtils.buildReviewUrl(mId);
+                return NetworkUtils.getResponseFromHttpUrl(reviewsRequestUrl);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            extractReviews(result);
+            loadReviewUI();
+        }
+    }
+
+    // Get JSON Data for Reviews from Movie DB
+
+    public void extractReviews (String reviewResponse){
+        try {
+            JSONObject jsonReviewObject = new JSONObject(reviewResponse);
+            JSONArray reviewResults = jsonReviewObject.getJSONArray(PARAM_RESULTS);
+            mReviewAuthors = new String[reviewResults.length()];
+            mReviewContent = new String[reviewResults.length()];
+            for (int i = 0; i < reviewResults.length(); i++)
+            {
+                mReviewAuthors[i] = reviewResults.getJSONObject(i).optString(PARAM_AUTHOR);
+                mReviewContent [i] = reviewResults.getJSONObject(i).optString(PARAM_CONTENT);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Load User Interface to display in Details Activity
+    public void loadReviewUI() {
+        if (mReviewContent.length == 0) {
+            findViewById(R.id.author).setVisibility(View.GONE);
+            findViewById(R.id.reviews_text_view).setVisibility(View.GONE);
+            findViewById(R.id.next_button).setVisibility(View.GONE);
+
+            TextView noReviews = new TextView(this);
+            noReviews.setText(R.string.no_reviews);
+            noReviews.setPadding(0, 0, 0, 50);
+            noReviews.setTextSize(15);
+            mReviewList.addView(noReviews);
+        } else {
+            if (mReviewContent.length == 1) {
+                findViewById(R.id.next_button).setVisibility(View.GONE);
+            }
+            String authorHeader = mReviewAuthors[reviewCounter] + ":";
+            ((TextView) findViewById(R.id.author)).setText(authorHeader);
+            ((TextView) findViewById(R.id.reviews_text_view)).setText(mReviewContent[reviewCounter]);
+            findViewById(R.id.next_button).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (reviewCounter < mReviewContent.length - 1) { reviewCounter++; }
+                    else { reviewCounter = 0; }
+                    loadReviewUI();
+                }
+            });
+        }
+    }
+
 }

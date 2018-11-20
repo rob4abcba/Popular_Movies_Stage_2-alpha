@@ -68,10 +68,27 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/summary_text_view"
-            android:paddingTop="60dp"
+            android:text="@string/author"
+            android:layout_marginTop="30dp"
+            android:id="@+id/author"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/summary_text_view"
+            android:layout_marginTop="60dp"
             android:text="@string/review_of_movie"
             android:id="@+id/reviews_text_view"
             />
+
+        <Button
+            android:id="@+id/next_button"
+            android:layout_width="120dp"
+            android:layout_height="41dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:text="Next Review" />
 
 
 
