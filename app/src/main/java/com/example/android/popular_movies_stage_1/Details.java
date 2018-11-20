@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -21,10 +22,12 @@ import java.net.URL;
 // Followed the walkthrough of @Gill AND from Slack.  His video on Youtube helped me follow the direction
 // to implement the working code.
 
+// got help from @ Napu Taitano (AND Graduate) with the Reviews task
+
 public class Details extends AppCompatActivity {
 
     private LinearLayout mTrailerList;
-    private LinearLayout mReviewList;
+    private RelativeLayout mReviewList;
     private String mId;
 
     private final String PARAM_RESULTS = "results";
@@ -62,8 +65,10 @@ public class Details extends AppCompatActivity {
         vote.setText(voteAverage);
         TextView overview = findViewById(R.id.summary_text_view);
         overview.setText(movie.getOverview());
-        mId = movie.getString(getString(R.string.movie_id));
+        mId = movie.getID();
         reviewCounter = 0;
+
+        mReviewList = findViewById(R.id.detail_layout);
 
         new FetchReviewsTask().execute();
 
@@ -119,6 +124,7 @@ public class Details extends AppCompatActivity {
             noReviews.setText(R.string.no_reviews);
             noReviews.setPadding(0, 0, 0, 50);
             noReviews.setTextSize(15);
+            noReviews.setTextColor(getColor(R.color.noReviews));
             mReviewList.addView(noReviews);
         } else {
             if (mReviewContent.length == 1) {

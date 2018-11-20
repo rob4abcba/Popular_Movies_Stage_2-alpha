@@ -54,7 +54,8 @@ public class GetMoviesTask extends AsyncTask<MainActivityInterface, Void, ArrayL
                         String vote = result.getString("vote_average");
                         String overview = result.getString("overview");
                         String poster = result.getString("poster_path");
-                        movies.add(new Movie(date, title, vote, overview, poster));
+                        String id = result.getString("id");
+                        movies.add(new Movie(date, title, vote, overview, poster, id));
                     }
                 } catch (JSONException e){
                     e.printStackTrace();

@@ -15,13 +15,15 @@ public class Movie implements Parcelable {
     private final String Vote;
     private final String Overview;
     private final String Poster;
+    private final String ID;
 
-    public Movie (String date, String title, String vote, String overview, String poster) {
+    public Movie (String date, String title, String vote, String overview, String poster, String id) {
         Date = date;
         Title = title;
         Vote = vote;
         Overview = overview;
         Poster = poster;
+        ID = id;
     }
 
     private Movie(Parcel source){
@@ -30,6 +32,7 @@ public class Movie implements Parcelable {
         Vote = source.readString();
         Overview = source.readString();
         Poster = source.readString();
+        ID = source.readString();
     }
 
     // Returns Date
@@ -47,6 +50,9 @@ public class Movie implements Parcelable {
     // Returns Poster
     public String getPoster() {return Poster;}
 
+    public String getID() {return ID;}
+
+
     @Override
     public int describeContents() {return 0;}
 
@@ -57,6 +63,7 @@ public class Movie implements Parcelable {
         dest.writeString(Vote);
         dest.writeString(Overview);
         dest.writeString(Poster);
+        dest.writeString(ID);
     }
 
     public static final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>(){
