@@ -9,6 +9,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
+// Updated Code highly inspired and guided by watching Jeriel NG Udacity's Guide
+// on Youtube!
+
 public class NetworkUtils {
 
     private static final String MOVIE_BASE_URL = "https://api.themoviedb.org/";

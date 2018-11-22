@@ -27,6 +27,9 @@ import java.net.URL;
 
 // got help from @ Napu Taitano (AND Graduate) with the Reviews task
 
+// Code highly inspired and guided by watching Jeriel NG Udacity's Guide
+// on Youtube!
+
 public class Details extends AppCompatActivity {
 
     private LinearLayout mTrailerList;
@@ -138,7 +141,7 @@ public class Details extends AppCompatActivity {
                 trailerItem.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        
+
                         //Referenced from Udacity's Course
                         Uri youtubeLink = Uri.parse(trailerUrl);
                         Intent youtubeIntent = new Intent(Intent.ACTION_VIEW, youtubeLink);
