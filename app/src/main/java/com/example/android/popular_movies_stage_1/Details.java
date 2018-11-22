@@ -1,10 +1,13 @@
 package com.example.android.popular_movies_stage_1;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -28,6 +31,7 @@ public class Details extends AppCompatActivity {
 
     private LinearLayout mTrailerList;
     private RelativeLayout mReviewList;
+    private TextView noReviews;
     private String mId;
 
     private final String PARAM_RESULTS = "results";
@@ -45,6 +49,8 @@ public class Details extends AppCompatActivity {
     private int reviewCounter;
 
     private static final String BASE_URL = "https://image.tmdb.org/t/p/w185";
+    private final String TRAILER_BASE_URL = "http://youtube.com/watch?v=";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,9 +75,81 @@ public class Details extends AppCompatActivity {
         reviewCounter = 0;
 
         mReviewList = findViewById(R.id.detail_layout);
+        mTrailerList = findViewById(R.id.trailer_list);
 
         new FetchReviewsTask().execute();
+        new FetchTrailersTask().execute();
 
+    }
+
+    // ASYNC Task for Trailers
+
+    public class FetchTrailersTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... strings) {
+            try {
+                URL trailersRequestUrl = NetworkUtils.buildTrailerUrl(mId);
+                return NetworkUtils.getResponseFromHttpUrl(trailersRequestUrl);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            extractTrailers(result);
+            loadTrailersUI();
+        }
+    }
+
+    public void extractTrailers(String trailersResponse) {
+        try {
+            JSONObject jsonTrailersObject = new JSONObject(trailersResponse);
+            JSONArray trailersResults = jsonTrailersObject.getJSONArray(PARAM_RESULTS);
+            mTrailerKeys = new String[trailersResults.length()];
+            mTrailerNames = new String[trailersResults.length()];
+            for (int i = 0; i < trailersResults.length(); i++)
+            {
+                mTrailerKeys[i] = trailersResults.getJSONObject(i).optString(PARAM_KEY);
+                mTrailerNames[i] = trailersResults.getJSONObject(i).optString(PARAM_NAME);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadTrailersUI() {
+        if (mTrailerKeys.length == 0) {
+            TextView noTrailers = new TextView(this);
+            noTrailers.setText(R.string.no_trailers);
+            noTrailers.setPadding(0, 30, 0, 0);
+            noTrailers.setTextSize(15);
+            noTrailers.setTextColor(getColor(R.color.noReviews));
+            mTrailerList.addView(noTrailers);
+        }
+        else {
+            for (int i = 0; i < mTrailerKeys.length; i++) {
+                Button trailerItem = new Button(this);
+                trailerItem.setText(mTrailerNames[i]);
+                trailerItem.setPadding(0, 50, 0, 30);
+                trailerItem.setTextSize(15);
+                final String trailerUrl = TRAILER_BASE_URL + mTrailerKeys[i];
+                trailerItem.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        
+                        //Referenced from Udacity's Course
+                        Uri youtubeLink = Uri.parse(trailerUrl);
+                        Intent youtubeIntent = new Intent(Intent.ACTION_VIEW, youtubeLink);
+                        if (youtubeIntent.resolveActivity(getPackageManager()) != null) {
+                            startActivity(youtubeIntent);
+                        }
+                    }
+                });
+                mTrailerList.addView(trailerItem);
+            }
+        }
     }
 
     // ASYNC Task for Reviews
@@ -120,12 +198,11 @@ public class Details extends AppCompatActivity {
             findViewById(R.id.reviews_text_view).setVisibility(View.GONE);
             findViewById(R.id.next_button).setVisibility(View.GONE);
 
-            TextView noReviews = new TextView(this);
+            //TextView noReviews = new TextView(this);
+            noReviews = findViewById(R.id.no_reviews_tv);
             noReviews.setText(R.string.no_reviews);
-            noReviews.setPadding(0, 0, 0, 50);
             noReviews.setTextSize(15);
             noReviews.setTextColor(getColor(R.color.noReviews));
-            mReviewList.addView(noReviews);
         } else {
             if (mReviewContent.length == 1) {
                 findViewById(R.id.next_button).setVisibility(View.GONE);

@@ -11,4 +11,6 @@
     <string name="author">Author</string>
     <string name="no_reviews">Sorry no reviews found.</string>
     <string name="movie_id">Movie ID</string>
+    <string name="no_trailers">No Trailers, sorry!</string>
+    <string name="sort_by_favorites_label">Favorites</string>
 </resources>

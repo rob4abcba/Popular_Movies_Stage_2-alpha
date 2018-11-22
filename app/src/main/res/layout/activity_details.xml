@@ -19,6 +19,7 @@
     <ImageView
         android:layout_width="185dp"
         android:layout_height="185dp"
+        android:paddingTop="15dp"
         android:id="@+id/movie_image_detail"
         />
 
@@ -28,6 +29,7 @@
         android:layout_toRightOf="@+id/movie_image_detail"
         android:id="@+id/title_text_view"
         android:textSize="30sp"
+        android:paddingTop="10dp"
         android:layout_marginStart="15dp"
         android:text="@string/title"
 
@@ -55,12 +57,30 @@
         android:id="@+id/rating_text_view"
         />
 
+        <Button
+            android:layout_width="106dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/rating_text_view"
+            android:layout_marginRight="93dp"
+            android:layout_toRightOf="@+id/movie_image_detail"
+            android:text="Save Favorite" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="15dp"
+        android:id="@+id/no_reviews_tv"
+        android:layout_alignTop="@+id/summary_text_view"/>
+
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/movie_image_detail"
-        android:paddingTop="60dp"
+        android:paddingTop="120dp"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
         android:text="@string/summary_of_movie_plot"
         android:id="@+id/summary_text_view"
         />
@@ -71,6 +91,8 @@
             android:layout_below="@+id/summary_text_view"
             android:text="@string/author"
             android:layout_marginTop="30dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
             android:id="@+id/author"
             />
 
@@ -79,6 +101,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/summary_text_view"
             android:layout_marginTop="60dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
             android:text="@string/review_of_movie"
             android:id="@+id/reviews_text_view"
             />
@@ -87,9 +111,16 @@
             android:id="@+id/next_button"
             android:layout_width="120dp"
             android:layout_height="41dp"
-
             android:layout_below="@+id/reviews_text_view"
             android:text="Next Review" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="50dp"
+            android:id="@+id/trailer_list"
+            android:layout_below="@+id/reviews_text_view"/>
 
 </RelativeLayout>
 </ScrollView>
