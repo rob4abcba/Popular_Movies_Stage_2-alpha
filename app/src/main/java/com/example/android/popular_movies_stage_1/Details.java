@@ -1,6 +1,8 @@
 package com.example.android.popular_movies_stage_1;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -12,7 +14,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.android.popular_movies_stage_1.data.FavoritesProvider;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -35,6 +39,7 @@ public class Details extends AppCompatActivity {
     private LinearLayout mTrailerList;
     private RelativeLayout mReviewList;
     private TextView noReviews;
+    private Button mFavoriteButton;
     private String mId;
 
     private final String PARAM_RESULTS = "results";
@@ -48,6 +53,12 @@ public class Details extends AppCompatActivity {
     private String[] mTrailerNames;
     private String[] mReviewAuthors;
     private String[] mReviewContent;
+
+    private String mPosterKey;
+    private String mTitle;
+    private String mDescription;
+    private double mVote;
+    private String mReleaseDate;
 
     private int reviewCounter;
 
@@ -76,12 +87,49 @@ public class Details extends AppCompatActivity {
         overview.setText(movie.getOverview());
         mId = movie.getID();
         reviewCounter = 0;
+        mFavoriteButton = findViewById(R.id.save_button);
 
         mReviewList = findViewById(R.id.detail_layout);
         mTrailerList = findViewById(R.id.trailer_list);
 
         new FetchReviewsTask().execute();
         new FetchTrailersTask().execute();
+
+        if (favoriteExists(mId))
+        {
+            mFavoriteButton.setTextColor(getResources().getColor(R.color.colorAccent));
+            mFavoriteButton.setText(getString(R.string.favorite_marked));
+        }
+        mFavoriteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (favoriteExists(mId)) {
+                    String WHERE_PARAM = FavoritesProvider.COLUMN_MOVIE_ID + " = " + mId;
+                    getContentResolver().delete(FavoritesProvider.CONTENT_URI,
+                            WHERE_PARAM, null);
+                    ((Button) v).setText(getString(R.string.not_added_to_favorites));
+                    ((Button) v).setTextColor(getResources().getColor(R.color.colorAccent));
+                    Toast.makeText(Details.this,
+                            "Removed from Favorites!", Toast.LENGTH_SHORT).show();
+                } else {
+                    ContentValues mValues = new ContentValues();
+                    mValues.put(FavoritesProvider.COLUMN_MOVIE_ID, mId);
+                    mValues.put(FavoritesProvider.COLUMN_TITLE, mTitle);
+                    mValues.put(FavoritesProvider.COLUMN_POSTER, mPosterKey);
+                    mValues.put(FavoritesProvider.COLUMN_DESCRIPTION, mDescription);
+                    mValues.put(FavoritesProvider.COLUMN_VOTE, mVote);
+                    mValues.put(FavoritesProvider.COLUMN_RELEASE_DATE, mReleaseDate);
+
+
+                    getContentResolver().insert(FavoritesProvider.CONTENT_URI, mValues);
+
+                    ((Button) v).setText(getString(R.string.favorite_marked));
+                    ((Button) v).setTextColor(getResources().getColor(R.color.colorAccent));
+                    Toast.makeText(Details.this,
+                            "Saved to Favorites!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
     }
 
@@ -216,12 +264,33 @@ public class Details extends AppCompatActivity {
             findViewById(R.id.next_button).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (reviewCounter < mReviewContent.length - 1) { reviewCounter++; }
-                    else { reviewCounter = 0; }
+                    if (reviewCounter < mReviewContent.length - 1) {
+                        reviewCounter++;
+                    } else {
+                        reviewCounter = 0;
+                    }
                     loadReviewUI();
                 }
             });
         }
     }
 
+    // check to see if movie has been selected as favorite
+    public boolean favoriteExists(String id) {
+        Uri uri = FavoritesProvider.CONTENT_URI;
+        Cursor cursor = getContentResolver()
+                .query(uri, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            while (!cursor.isAfterLast()) {
+                String movieId = cursor
+                        .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_MOVIE_ID));
+                if (id.equals(movieId)) {
+                    return true;
+                }
+                cursor.moveToNext();
+            }
+            cursor.close();
+        }
+        return false;
+    }
 }

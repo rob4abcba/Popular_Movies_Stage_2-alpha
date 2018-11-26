@@ -23,7 +23,7 @@ public class DbHelper extends SQLiteOpenHelper {
               + " ("
               + FavoritesProvider.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
               + FavoritesProvider.COLUMN_MOVIE_ID + " INTEGER NOT NULL, "
-              + FavoritesProvider.COLUMN_TITLE + " TEXT NOT NULL, "
+              + FavoritesProvider.COLUMN_TITLE + " TEXT , "
               + FavoritesProvider.COLUMN_DESCRIPTION + " TEXT, "
               + FavoritesProvider.COLUMN_POSTER + " TEXT, "
               + FavoritesProvider.COLUMN_VOTE + " REAL, "

@@ -60,6 +60,7 @@
         <Button
             android:layout_width="106dp"
             android:layout_height="wrap_content"
+            android:id="@+id/save_button"
             android:layout_alignParentRight="true"
             android:layout_below="@+id/rating_text_view"
             android:layout_marginRight="93dp"

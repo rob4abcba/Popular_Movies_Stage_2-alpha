@@ -13,4 +13,8 @@
     <string name="movie_id">Movie ID</string>
     <string name="no_trailers">No Trailers, sorry!</string>
     <string name="sort_by_favorites_label">Favorites</string>
+    <string name="no_favorites">Sorry no favorites!</string>
+    <string name="favorite_marked">Movie Favorited</string>
+    <string name="not_added_to_favorites">Click to add to favorites</string>
+    <string name="content_authority">com.example.android.popular_movies_stage_1</string>
 </resources>
