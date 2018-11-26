@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
             while (!cursor.isAfterLast()) {
                 mIdList[i] = cursor
                         // TODO 2: ArrayIndexOutOfBoundsException: length=1; index=1 error
-                        // TODO 2: This error occurs in Main Activity Screen when Sort By "Favorites" options is clicked
+                        // TODO 2: This error occurs in Main Activity Screen when Sort By "Favorites" options is clicked after I have favorited a movie
                         .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_MOVIE_ID));
                 mPosterPaths[i] = cursor
                         .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_POSTER));
@@ -149,14 +149,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
             // do I add populateUI or getMovies?  line 213 on master app
             // maybe try adding to turn the other sort by's invisible?
             //populateUI();
-            getMovies();
+            getFavorites();
         } else {
 
             // create text if there are no favorites
 
             //TODO: 1 how can I insert the data for favorites into current grid? WHen it is empty
             //TODO: 1 "NullPointerException: Attempt to invoke virtual method 'boolean android.support.v7.widget.RecyclerView$ViewHolder.shouldIgnore()' on a null object reference"
-            //TODO: 1 This error occurs when Sort By Favorites is selected.  I am creating the movieGrid.addView wrong I think...
+            //TODO: 1 This error occurs when Sort By Favorites when no favorites have been selected.
 
             TextView noFavorites = new TextView(this);
             noFavorites.setText(getString(R.string.no_favorites));
