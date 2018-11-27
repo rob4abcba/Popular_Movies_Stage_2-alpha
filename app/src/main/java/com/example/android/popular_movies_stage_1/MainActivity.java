@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     private MovieAdapter movieAdapter;
     private RecyclerView movieGrid;
     private TextView errorMessage;
+    private TextView noFavoritesView;
     private ProgressBar loadingIndicator;
     private static final String SORT_BY_MOST_POPULAR = "http://api.themoviedb.org/3/movie/popular?api_key=b1d3802dbb5542cb1aaaab6d85d9d5ae";
     private static final String SORT_BY_HIGHEST_RATED = "http://api.themoviedb.org/3/movie/top_rated?api_key=b1d3802dbb5542cb1aaaab6d85d9d5ae";
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         movieAdapter = new MovieAdapter(this);
         movieGrid.setAdapter(movieAdapter);
         errorMessage = findViewById(R.id.empty_view);
+        noFavoritesView = findViewById(R.id.empty_view_no_favorites);
         loadingIndicator = findViewById(R.id.loading_indicator);
         sortBy = "http://api.themoviedb.org/3/movie/popular?api_key=b1d3802dbb5542cb1aaaab6d85d9d5ae";
         getMovies();
@@ -135,6 +137,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
                         .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_MOVIE_ID));
                 mPosterPaths[i] = cursor
                         .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_POSTER));
+                mTitleList[i] = cursor
+                        .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_TITLE));
                 mDescriptionList[i] = cursor
                         .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_DESCRIPTION));
                 mVoteList[i] = cursor
@@ -143,31 +147,28 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
                         .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_RELEASE_DATE));
 
                 i++;
-                cursor.moveToFirst();
+                cursor.moveToNext();
             }
             cursor.close();
             // do I add populateUI or getMovies?  line 213 on master app
             // maybe try adding to turn the other sort by's invisible?
             //populateUI();
-            getFavorites();
+            getMovies();
+
         } else {
 
-            // create text if there are no favorites
+            // GOT GUIDANCE FROM STEVE (AND) From Slack on how to correctly display when
+            // There are no favorites.
 
-            //TODO: 1 how can I insert the data for favorites into current grid? WHen it is empty
-            //TODO: 1 "NullPointerException: Attempt to invoke virtual method 'boolean android.support.v7.widget.RecyclerView$ViewHolder.shouldIgnore()' on a null object reference"
-            //TODO: 1 This error occurs when Sort By Favorites when no favorites have been selected.
+            noFavoritesView.setVisibility(View.VISIBLE);
+            movieGrid.setVisibility(View.INVISIBLE);
+            errorMessage.setVisibility(View.INVISIBLE);
 
-            TextView noFavorites = new TextView(this);
-            noFavorites.setText(getString(R.string.no_favorites));
-            noFavorites.setTextSize(18);
-            noFavorites.setPadding(30, 30, 0, 0);
-            noFavorites.setTextColor(getColor(R.color.noReviews));
-            movieGrid.removeAllViews();
-            movieGrid.addView(noFavorites);
-
+            loadingIndicator.setVisibility(View.INVISIBLE);
         }
     }
+
+        // TODO: 4 MAYBE the getFavorites method should be more implemented like this but worked around?
 
         private void getMovies() {
         movieGrid.setVisibility(View.INVISIBLE);
