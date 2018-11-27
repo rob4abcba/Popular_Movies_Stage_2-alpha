@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
             // do I add populateUI or getMovies?  line 213 on master app
             // maybe try adding to turn the other sort by's invisible?
             //populateUI();
-            getMovies();
+            //getMovies();
 
         } else {
 
