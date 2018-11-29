@@ -91,4 +91,3 @@ protected void onPostExecute(ArrayList<Movie> movies){
     }
     }
 }
-

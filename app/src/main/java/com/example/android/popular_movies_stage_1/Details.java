@@ -9,16 +9,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.android.popular_movies_stage_1.data.FavoritesProvider;
+import com.example.android.popular_movies_stage_1.data.FavoritesDbSingle;
+import com.example.android.popular_movies_stage_1.data.MovieDb;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,7 +35,6 @@ import java.net.URL;
 public class Details extends AppCompatActivity {
 
     private LinearLayout mTrailerList;
-    private RelativeLayout mReviewList;
     private TextView noReviews;
     private Button mFavoriteButton;
     private String mId;
@@ -54,12 +51,6 @@ public class Details extends AppCompatActivity {
     private String[] mReviewAuthors;
     private String[] mReviewContent;
 
-    private String mPosterKey;
-    private String mTitle;
-    private String mDescription;
-    private double mVote;
-    private String mReleaseDate;
-
     private int reviewCounter;
 
     private static final String BASE_URL = "https://image.tmdb.org/t/p/w185";
@@ -70,7 +61,7 @@ public class Details extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
         Intent intent = getIntent();
-        Movie movie = intent.getParcelableExtra("movie");
+        final Movie movie = intent.getParcelableExtra("movie");
         TextView title = findViewById(R.id.title_text_view);
         title.setText(movie.getTitle());
         ImageView poster = findViewById(R.id.movie_image_detail);
@@ -88,21 +79,26 @@ public class Details extends AppCompatActivity {
         mId = movie.getID();
         reviewCounter = 0;
         mFavoriteButton = findViewById(R.id.save_button);
-
-        mReviewList = findViewById(R.id.detail_layout);
         mTrailerList = findViewById(R.id.trailer_list);
 
         new FetchReviewsTask().execute();
         new FetchTrailersTask().execute();
+
+        // TODO 5: WHAT DO I DO NEXT?
+        FavoritesDbSingle movieDb = (FavoritesDbSingle)FavoritesDbSingle.getInstance(this);
 
         if (favoriteExists(mId))
         {
             mFavoriteButton.setTextColor(getResources().getColor(R.color.colorAccent));
             mFavoriteButton.setText(getString(R.string.favorite_marked));
         }
+
+        //TODO 3: Convert to ViewModel?  to store data when button is clicked
+
         mFavoriteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 if (favoriteExists(mId)) {
                     String WHERE_PARAM = FavoritesProvider.COLUMN_MOVIE_ID + " = " + mId;
                     getContentResolver().delete(FavoritesProvider.CONTENT_URI,
@@ -113,12 +109,12 @@ public class Details extends AppCompatActivity {
                             "Removed from Favorites!", Toast.LENGTH_SHORT).show();
                 } else {
                     ContentValues mValues = new ContentValues();
-                    mValues.put(FavoritesProvider.COLUMN_MOVIE_ID, mId);
-                    mValues.put(FavoritesProvider.COLUMN_TITLE, mTitle);
-                    mValues.put(FavoritesProvider.COLUMN_POSTER, mPosterKey);
-                    mValues.put(FavoritesProvider.COLUMN_DESCRIPTION, mDescription);
-                    mValues.put(FavoritesProvider.COLUMN_VOTE, mVote);
-                    mValues.put(FavoritesProvider.COLUMN_RELEASE_DATE, mReleaseDate);
+                    mValues.put(FavoritesProvider.COLUMN_MOVIE_ID, movie.getID());
+                    mValues.put(FavoritesProvider.COLUMN_TITLE, movie.getTitle());
+                    mValues.put(FavoritesProvider.COLUMN_POSTER, movie.getPoster());
+                    mValues.put(FavoritesProvider.COLUMN_DESCRIPTION, movie.getOverview());
+                    mValues.put(FavoritesProvider.COLUMN_VOTE, movie.getVote());
+                    mValues.put(FavoritesProvider.COLUMN_RELEASE_DATE, movie.getDate());
 
 
                     getContentResolver().insert(FavoritesProvider.CONTENT_URI, mValues);
@@ -276,6 +272,8 @@ public class Details extends AppCompatActivity {
     }
 
     // check to see if movie has been selected as favorite
+    //TODO 4: Change this to Room
+
     public boolean favoriteExists(String id) {
         Uri uri = FavoritesProvider.CONTENT_URI;
         Cursor cursor = getContentResolver()

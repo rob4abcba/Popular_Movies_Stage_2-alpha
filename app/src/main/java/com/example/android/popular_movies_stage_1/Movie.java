@@ -52,7 +52,6 @@ public class Movie implements Parcelable {
 
     public String getID() {return ID;}
 
-
     @Override
     public int describeContents() {return 0;}
 

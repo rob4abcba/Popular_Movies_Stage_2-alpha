@@ -19,10 +19,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".Details" />
-        <provider
-            android:authorities="@string/content_authority"
-            android:name=".data.FavoritesProvider"
-            android:exported="false"/>
     </application>
 
 </manifest>

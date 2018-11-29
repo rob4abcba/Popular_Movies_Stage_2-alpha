@@ -14,12 +14,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.GridLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.android.popular_movies_stage_1.data.FavoritesProvider;
-import com.squareup.picasso.Picasso;
+import java.util.ArrayList;
 
 
 // Followed the walkthrough of @Gill AND from Slack.  His video on Youtube helped me follow the direction
@@ -37,8 +35,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     private TextView errorMessage;
     private TextView noFavoritesView;
     private ProgressBar loadingIndicator;
-    private static final String SORT_BY_MOST_POPULAR = "http://api.themoviedb.org/3/movie/popular?api_key=b1d3802dbb5542cb1aaaab6d85d9d5ae";
-    private static final String SORT_BY_HIGHEST_RATED = "http://api.themoviedb.org/3/movie/top_rated?api_key=b1d3802dbb5542cb1aaaab6d85d9d5ae";
+    private static final String SORT_BY_MOST_POPULAR = "http://api.themoviedb.org/3/movie/popular?api_key=";
+    private static final String SORT_BY_HIGHEST_RATED = "http://api.themoviedb.org/3/movie/top_rated?api_key=";
     private static final String SORT_BY_FAVORITES = "";
 
     // Stored data for the favorites
@@ -62,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         errorMessage = findViewById(R.id.empty_view);
         noFavoritesView = findViewById(R.id.empty_view_no_favorites);
         loadingIndicator = findViewById(R.id.loading_indicator);
-        sortBy = "http://api.themoviedb.org/3/movie/popular?api_key=b1d3802dbb5542cb1aaaab6d85d9d5ae";
+        sortBy = "http://api.themoviedb.org/3/movie/popular?api_key=";
         getMovies();
     }
 
@@ -116,6 +114,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     }
 
         private void getFavorites() {
+
+        // TODO 1: Convert this to Room + Live Data
         Uri uri = FavoritesProvider.CONTENT_URI;
         Cursor cursor = getContentResolver()
                 .query(uri, null, null, null, null);
@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
 
             int i = 0;
             int resultsLength = cursor.getCount();
+            ArrayList<Movie> favoriteMoviesList = new ArrayList<>();
             mIdList = new String [resultsLength];
             mTitleList = new String [resultsLength];
             mPosterPaths = new String [resultsLength];
@@ -132,8 +133,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
             mDateList = new String [resultsLength];
             while (!cursor.isAfterLast()) {
                 mIdList[i] = cursor
-                        // TODO 2: ArrayIndexOutOfBoundsException: length=1; index=1 error
-                        // TODO 2: This error occurs in Main Activity Screen when Sort By "Favorites" options is clicked after I have favorited a movie
+                        // TODO 2: Convert this to Room + Live Data
                         .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_MOVIE_ID));
                 mPosterPaths[i] = cursor
                         .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_POSTER));
@@ -146,14 +146,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
                 mDateList[i] = cursor
                         .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_RELEASE_DATE));
 
+                favoriteMoviesList.add(new Movie(mDateList[i], mTitleList[i], String.valueOf(mVoteList[i]), mDescriptionList[i], mPosterPaths[i], mIdList[i]));
+
                 i++;
                 cursor.moveToNext();
             }
             cursor.close();
-            // do I add populateUI or getMovies?  line 213 on master app
-            // maybe try adding to turn the other sort by's invisible?
-            //populateUI();
-            //getMovies();
+            movieAdapter.setMovies(favoriteMoviesList);
+            movieAdapter.notifyDataSetChanged();
 
         } else {
 
@@ -167,8 +167,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
             loadingIndicator.setVisibility(View.INVISIBLE);
         }
     }
-
-        // TODO: 4 MAYBE the getFavorites method should be more implemented like this but worked around?
 
         private void getMovies() {
         movieGrid.setVisibility(View.INVISIBLE);
