@@ -5,6 +5,7 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import com.example.android.popular_movies_stage_1.Movie;
 
@@ -14,6 +15,7 @@ import com.example.android.popular_movies_stage_1.Movie;
 public class FavoritesRoomObject implements Parcelable {
 
     @PrimaryKey
+    @NonNull
     @ColumnInfo(name = "id")
     private String id;
 

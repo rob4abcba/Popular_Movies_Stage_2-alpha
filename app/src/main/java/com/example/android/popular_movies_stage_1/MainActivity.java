@@ -2,6 +2,7 @@ package com.example.android.popular_movies_stage_1;
 
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -45,8 +47,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     private TextView errorMessage;
     private TextView noFavoritesView;
     private ProgressBar loadingIndicator;
-    private static final String SORT_BY_MOST_POPULAR = "http://api.themoviedb.org/3/movie/popular?api_key=";
-    private static final String SORT_BY_HIGHEST_RATED = "http://api.themoviedb.org/3/movie/top_rated?api_key=";
+    private static final String SORT_BY_MOST_POPULAR = "http://api.themoviedb.org/3/movie/popular?api_key=b1d3802dbb5542cb1aaaab6d85d9d5ae";
+    private static final String SORT_BY_HIGHEST_RATED = "http://api.themoviedb.org/3/movie/top_rated?api_key=b1d3802dbb5542cb1aaaab6d85d9d5ae";
     private static final String SORT_BY_FAVORITES = "";
 
 
@@ -64,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         errorMessage = findViewById(R.id.empty_view);
         noFavoritesView = findViewById(R.id.empty_view_no_favorites);
         loadingIndicator = findViewById(R.id.loading_indicator);
-        sortBy = "http://api.themoviedb.org/3/movie/popular?api_key=";
+        sortBy = "http://api.themoviedb.org/3/movie/popular?api_key=b1d3802dbb5542cb1aaaab6d85d9d5ae";
         //TODO 6: Settup observe for live data for getFavorites from ViewModel
         getMovies();
     }
@@ -124,8 +126,13 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
 
             LiveData<List<FavoritesRoomObject>> favoriteMoviesList = movieDb.movieDao().getAllFavMovies();
             //TODO 8: Add observer here?
-            FavoritesViewModel favoritesViewModel = ViewModelProviders.of(this, getFavorites().get(FavoritesViewModel.class));
-            favoritesViewModel.getFavorites().observe(LifecycleOwner,favoriteMoviesList);
+            FavoritesViewModel favoritesViewModel = ViewModelProviders.of(this).get(FavoritesViewModel.class);
+            favoritesViewModel.getFavorites().observe(this, new Observer<List<FavoritesRoomObject>>() {
+                @Override
+                public void onChanged(@Nullable List<FavoritesRoomObject> favoritesRoomObjects) {
+
+                }
+            });
 
 
             ArrayList<Movie> favMovies = new ArrayList<>();

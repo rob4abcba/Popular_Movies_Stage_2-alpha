@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.popular_movies_stage_1.data.FavoritesDbSingle;
+import com.example.android.popular_movies_stage_1.data.FavoritesRoomObject;
 import com.example.android.popular_movies_stage_1.data.MovieDb;
 import com.squareup.picasso.Picasso;
 
@@ -76,6 +77,7 @@ public class Details extends AppCompatActivity {
         vote.setText(voteAverage);
         TextView overview = findViewById(R.id.summary_text_view);
         overview.setText(movie.getOverview());
+        // TODO 9: Change to this to a Dao get findById or variable?
         mId = movie.getID();
         reviewCounter = 0;
         mFavoriteButton = findViewById(R.id.save_button);
@@ -84,8 +86,9 @@ public class Details extends AppCompatActivity {
         new FetchReviewsTask().execute();
         new FetchTrailersTask().execute();
 
-        // TODO 5: WHAT DO I DO NEXT?
-        FavoritesDbSingle movieDb = (FavoritesDbSingle)FavoritesDbSingle.getInstance(this);
+        // Allocates the favorites movie data into a single instance
+
+        final MovieDb movieDb = FavoritesDbSingle.getInstance(this);
 
         if (favoriteExists(mId))
         {
@@ -100,24 +103,22 @@ public class Details extends AppCompatActivity {
             public void onClick(View v) {
 
                 if (favoriteExists(mId)) {
-                    String WHERE_PARAM = FavoritesProvider.COLUMN_MOVIE_ID + " = " + mId;
-                    getContentResolver().delete(FavoritesProvider.CONTENT_URI,
-                            WHERE_PARAM, null);
+                    movieDb.movieDao().delete(movieDb.movieDao().findById(Integer.parseInt(mId)));
                     ((Button) v).setText(getString(R.string.not_added_to_favorites));
                     ((Button) v).setTextColor(getResources().getColor(R.color.colorAccent));
                     Toast.makeText(Details.this,
                             "Removed from Favorites!", Toast.LENGTH_SHORT).show();
                 } else {
                     ContentValues mValues = new ContentValues();
-                    mValues.put(FavoritesProvider.COLUMN_MOVIE_ID, movie.getID());
-                    mValues.put(FavoritesProvider.COLUMN_TITLE, movie.getTitle());
-                    mValues.put(FavoritesProvider.COLUMN_POSTER, movie.getPoster());
-                    mValues.put(FavoritesProvider.COLUMN_DESCRIPTION, movie.getOverview());
-                    mValues.put(FavoritesProvider.COLUMN_VOTE, movie.getVote());
-                    mValues.put(FavoritesProvider.COLUMN_RELEASE_DATE, movie.getDate());
+                    mValues.put(FavoritesRoomObject.movie.getID());
+                    mValues.put(FavoritesRoomObject.movie.getTitle());
+                    mValues.put(FavoritesRoomObject.movie.getPoster());
+                    mValues.put(FavoritesRoomObject.movie.getOverview());
+                    mValues.put(FavoritesRoomObject.movie.getVote());
+                    mValues.put(FavoritesRoomObject.movie.getDate());
 
 
-                    getContentResolver().insert(FavoritesProvider.CONTENT_URI, mValues);
+                    getContentResolver().insert(FavoritesRoomObject.CONTENT_URI, mValues);
 
                     ((Button) v).setText(getString(R.string.favorite_marked));
                     ((Button) v).setTextColor(getResources().getColor(R.color.colorAccent));
@@ -274,21 +275,8 @@ public class Details extends AppCompatActivity {
     // check to see if movie has been selected as favorite
     //TODO 4: Change this to Room
 
-    public boolean favoriteExists(String id) {
-        Uri uri = FavoritesProvider.CONTENT_URI;
-        Cursor cursor = getContentResolver()
-                .query(uri, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            while (!cursor.isAfterLast()) {
-                String movieId = cursor
-                        .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_MOVIE_ID));
-                if (id.equals(movieId)) {
-                    return true;
-                }
-                cursor.moveToNext();
-            }
-            cursor.close();
-        }
-        return false;
+    public boolean favoriteExists(MovieDb db, String id) {
+        FavoritesRoomObject test = db.movieDao().findById(Integer.parseInt(id));
+        return test == null;
     }
 }

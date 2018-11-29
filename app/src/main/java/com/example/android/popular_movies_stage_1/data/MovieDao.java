@@ -13,16 +13,16 @@ import java.util.List;
 @TypeConverters({Converters.class})
 public interface MovieDao {
 
-    @Query("SELECT * FROM movies")
+    @Query("SELECT * FROM favorites")
     LiveData<List<FavoritesRoomObject>> getAllFavMovies();
 
-    @Query("SELECT * FROM movies WHERE id IN (:movieIds)")
+    @Query("SELECT * FROM favorites WHERE id IN (:movieIds)")
     List<FavoritesRoomObject> loadAllByIds(int[] movieIds);
 
-    @Query("SELECT * FROM movies WHERE id LIKE :movieId LIMIT 1")
+    @Query("SELECT * FROM favorites WHERE id LIKE :movieId LIMIT 1")
     FavoritesRoomObject findById(int movieId);
 
-    @Query("SELECT * FROM movies WHERE title LIKE :movieTitle LIMIT 1")
+    @Query("SELECT * FROM favorites WHERE title LIKE :movieTitle LIMIT 1")
     FavoritesRoomObject findByTitle(String movieTitle);
 
     @Insert
