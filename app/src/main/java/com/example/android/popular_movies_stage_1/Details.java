@@ -93,7 +93,7 @@ public class Details extends AppCompatActivity {
             mFavoriteButton.setText(getString(R.string.favorite_marked));
         }
 
-        //TODO 3: Convert to ViewModel?  to store data when button is clicked
+        //TODO 3: Convert to ViewModel?  to store data when button is clicked...
 
         mFavoriteButton.setOnClickListener(new View.OnClickListener() {
             @Override
