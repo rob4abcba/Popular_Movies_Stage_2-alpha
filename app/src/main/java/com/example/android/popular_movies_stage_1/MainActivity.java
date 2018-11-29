@@ -1,5 +1,8 @@
 package com.example.android.popular_movies_stage_1;
 
+import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -17,7 +20,12 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.android.popular_movies_stage_1.data.FavoritesDbSingle;
+import com.example.android.popular_movies_stage_1.data.FavoritesRoomObject;
+import com.example.android.popular_movies_stage_1.data.FavoritesViewModel;
+
 import java.util.ArrayList;
+import java.util.List;
 
 
 // Followed the walkthrough of @Gill AND from Slack.  His video on Youtube helped me follow the direction
@@ -25,6 +33,8 @@ import java.util.ArrayList;
 
 // Updated Code highly inspired and guided by watching Jeriel NG Udacity's Guide
 // on Youtube!
+
+// Got help from @Aaron Quaday From Slack!
 
 public class MainActivity extends AppCompatActivity implements MainActivityInterface {
 
@@ -39,14 +49,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     private static final String SORT_BY_HIGHEST_RATED = "http://api.themoviedb.org/3/movie/top_rated?api_key=";
     private static final String SORT_BY_FAVORITES = "";
 
-    // Stored data for the favorites
 
-    private String[] mPosterPaths;
-    private String[] mTitleList;
-    private String[] mDescriptionList;
-    private double[] mVoteList;
-    private String[] mDateList;
-    private String[] mIdList;
+    // Stored data for the favorites
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         noFavoritesView = findViewById(R.id.empty_view_no_favorites);
         loadingIndicator = findViewById(R.id.loading_indicator);
         sortBy = "http://api.themoviedb.org/3/movie/popular?api_key=";
+        //TODO 6: Settup observe for live data for getFavorites from ViewModel
         getMovies();
     }
 
@@ -115,47 +120,24 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
 
         private void getFavorites() {
 
-        // TODO 1: Convert this to Room + Live Data
-        Uri uri = FavoritesProvider.CONTENT_URI;
-        Cursor cursor = getContentResolver()
-                .query(uri, null, null, null, null);
+            FavoritesDbSingle movieDb = (FavoritesDbSingle) FavoritesDbSingle.getInstance(this);
 
-        if (cursor !=null && cursor.moveToFirst()){
+            LiveData<List<FavoritesRoomObject>> favoriteMoviesList = movieDb.movieDao().getAllFavMovies();
+            //TODO 8: Add observer here?
+            FavoritesViewModel favoritesViewModel = ViewModelProviders.of(this, getFavorites().get(FavoritesViewModel.class));
+            favoritesViewModel.getFavorites().observe(LifecycleOwner,favoriteMoviesList);
 
-            int i = 0;
-            int resultsLength = cursor.getCount();
-            ArrayList<Movie> favoriteMoviesList = new ArrayList<>();
-            mIdList = new String [resultsLength];
-            mTitleList = new String [resultsLength];
-            mPosterPaths = new String [resultsLength];
-            mDescriptionList = new String [resultsLength];
-            mVoteList = new double [resultsLength];
-            mDateList = new String [resultsLength];
-            while (!cursor.isAfterLast()) {
-                mIdList[i] = cursor
-                        // TODO 2: Convert this to Room + Live Data
-                        .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_MOVIE_ID));
-                mPosterPaths[i] = cursor
-                        .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_POSTER));
-                mTitleList[i] = cursor
-                        .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_TITLE));
-                mDescriptionList[i] = cursor
-                        .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_DESCRIPTION));
-                mVoteList[i] = cursor
-                        .getDouble(cursor.getColumnIndex(FavoritesProvider.COLUMN_VOTE));
-                mDateList[i] = cursor
-                        .getString(cursor.getColumnIndex(FavoritesProvider.COLUMN_RELEASE_DATE));
 
-                favoriteMoviesList.add(new Movie(mDateList[i], mTitleList[i], String.valueOf(mVoteList[i]), mDescriptionList[i], mPosterPaths[i], mIdList[i]));
+            ArrayList<Movie> favMovies = new ArrayList<>();
 
-                i++;
-                cursor.moveToNext();
+            for (FavoritesRoomObject favoritesRoomObject : favoriteMoviesList.getValue()) {
+                favMovies.add(new Movie(favoritesRoomObject));
             }
-            cursor.close();
-            movieAdapter.setMovies(favoriteMoviesList);
+
+            movieAdapter.setMovies(favMovies);
             movieAdapter.notifyDataSetChanged();
 
-        } else {
+        if (favMovies == null) {
 
             // GOT GUIDANCE FROM STEVE (AND) From Slack on how to correctly display when
             // There are no favorites.

@@ -5,6 +5,8 @@ import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.example.android.popular_movies_stage_1.data.FavoritesRoomObject;
+
 // Followed the walkthrough of @Gill AND from Slack.  His video on Youtube helped me follow the direction
 // to implement the working code.
 
@@ -33,6 +35,15 @@ public class Movie implements Parcelable {
         Overview = source.readString();
         Poster = source.readString();
         ID = source.readString();
+    }
+
+    public Movie (FavoritesRoomObject favoritesRoomObject){
+        Date = getDate();
+        Title = getTitle();
+        Vote = getVote();
+        Overview = getOverview();
+        Poster = getPoster();
+        ID = getID();
     }
 
     // Returns Date
