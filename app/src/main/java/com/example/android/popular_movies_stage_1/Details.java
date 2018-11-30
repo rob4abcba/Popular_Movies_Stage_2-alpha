@@ -1,12 +1,16 @@
 package com.example.android.popular_movies_stage_1;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -16,6 +20,7 @@ import android.widget.Toast;
 
 import com.example.android.popular_movies_stage_1.data.FavoritesDbSingle;
 import com.example.android.popular_movies_stage_1.data.FavoritesRoomObject;
+import com.example.android.popular_movies_stage_1.data.FavoritesViewModel;
 import com.example.android.popular_movies_stage_1.data.MovieDb;
 import com.squareup.picasso.Picasso;
 
@@ -24,6 +29,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 // Followed the walkthrough of @Gill AND from Slack.  His video on Youtube helped me follow the direction
 // to implement the working code.
@@ -57,6 +64,10 @@ public class Details extends AppCompatActivity {
     private static final String BASE_URL = "https://image.tmdb.org/t/p/w185";
     private final String TRAILER_BASE_URL = "http://youtube.com/watch?v=";
 
+    // Favorites Variables Ver.1
+    static MovieDb movieDb;
+    boolean favoriteExists;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,43 +94,38 @@ public class Details extends AppCompatActivity {
         mFavoriteButton = findViewById(R.id.save_button);
         mTrailerList = findViewById(R.id.trailer_list);
 
+
+
         new FetchReviewsTask().execute();
         new FetchTrailersTask().execute();
 
+
         // Allocates the favorites movie data into a single instance
 
-        final MovieDb movieDb = FavoritesDbSingle.getInstance(this);
+        movieDb = FavoritesDbSingle.getInstance(this);
 
-        if (favoriteExists(mId))
+        if (favoriteExists)
         {
             mFavoriteButton.setTextColor(getResources().getColor(R.color.colorAccent));
             mFavoriteButton.setText(getString(R.string.favorite_marked));
         }
 
-        //TODO 3: Convert to ViewModel?  to store data when button is clicked...
 
         mFavoriteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                if (favoriteExists(mId)) {
+                //boolean favoriteExists = new favoriteExists().execute(mId);
+
+                if (favoriteExists) {
                     movieDb.movieDao().delete(movieDb.movieDao().findById(Integer.parseInt(mId)));
                     ((Button) v).setText(getString(R.string.not_added_to_favorites));
                     ((Button) v).setTextColor(getResources().getColor(R.color.colorAccent));
                     Toast.makeText(Details.this,
                             "Removed from Favorites!", Toast.LENGTH_SHORT).show();
                 } else {
-                    ContentValues mValues = new ContentValues();
-                    mValues.put(FavoritesRoomObject.movie.getID());
-                    mValues.put(FavoritesRoomObject.movie.getTitle());
-                    mValues.put(FavoritesRoomObject.movie.getPoster());
-                    mValues.put(FavoritesRoomObject.movie.getOverview());
-                    mValues.put(FavoritesRoomObject.movie.getVote());
-                    mValues.put(FavoritesRoomObject.movie.getDate());
-
-
-                    getContentResolver().insert(FavoritesRoomObject.CONTENT_URI, mValues);
-
+                    FavoritesRoomObject newFavorite = new FavoritesRoomObject(movie.getID(), movie.getTitle(), movie.getOverview(), movie.getPoster(), movie.getVote(), movie.getDate());
+                    new addFavoriteTask().execute(newFavorite);
                     ((Button) v).setText(getString(R.string.favorite_marked));
                     ((Button) v).setTextColor(getResources().getColor(R.color.colorAccent));
                     Toast.makeText(Details.this,
@@ -275,8 +281,49 @@ public class Details extends AppCompatActivity {
     // check to see if movie has been selected as favorite
     //TODO 4: Change this to Room
 
-    public boolean favoriteExists(MovieDb db, String id) {
-        FavoritesRoomObject test = db.movieDao().findById(Integer.parseInt(id));
-        return test == null;
+
+      public class favoriteExists extends AsyncTask<String, Void, Boolean>{
+
+          @Override
+          protected Boolean doInBackground(String... strings) {
+
+              movieDb = FavoritesDbSingle.getInstance(getApplicationContext());
+
+              try {
+                  FavoritesRoomObject test = movieDb.movieDao().findById(Integer.parseInt(strings[0]));
+                  return test == null;
+              } catch (Exception e) {
+
+                  e.printStackTrace();
+              }
+              return null;
+          }
+
+          @Override
+          protected void onPostExecute(Boolean aBoolean) {
+              super.onPostExecute(aBoolean);
+              favoriteExists = aBoolean;
+          }
+      }
+
+    public class addFavoriteTask extends AsyncTask<FavoritesRoomObject, Void, Void>{
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+
+        @Override
+        protected Void doInBackground(FavoritesRoomObject... favoritesRoomObjects) {
+            movieDb = FavoritesDbSingle.getInstance(getApplicationContext());
+
+            try {
+                movieDb.movieDao().insertAll(favoritesRoomObjects);
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.example.android.popular_movies_stage_1;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -25,6 +27,7 @@ import android.widget.TextView;
 import com.example.android.popular_movies_stage_1.data.FavoritesDbSingle;
 import com.example.android.popular_movies_stage_1.data.FavoritesRoomObject;
 import com.example.android.popular_movies_stage_1.data.FavoritesViewModel;
+import com.example.android.popular_movies_stage_1.data.MovieDb;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,16 +43,21 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MainActivityInterface {
 
-
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private String sortBy;
     private MovieAdapter movieAdapter;
     private RecyclerView movieGrid;
     private TextView errorMessage;
     private TextView noFavoritesView;
     private ProgressBar loadingIndicator;
-    private static final String SORT_BY_MOST_POPULAR = "http://api.themoviedb.org/3/movie/popular?api_key=b1d3802dbb5542cb1aaaab6d85d9d5ae";
-    private static final String SORT_BY_HIGHEST_RATED = "http://api.themoviedb.org/3/movie/top_rated?api_key=b1d3802dbb5542cb1aaaab6d85d9d5ae";
+    private static final String SORT_BY_MOST_POPULAR = "http://api.themoviedb.org/3/movie/popular?api_key=";
+    private static final String SORT_BY_HIGHEST_RATED = "http://api.themoviedb.org/3/movie/top_rated?api_key=";
     private static final String SORT_BY_FAVORITES = "";
+
+    private List<FavoritesRoomObject> mFavoriteMovies;
+    private ArrayList<Movie> mMovies = new ArrayList<>();
+    final String FAVORITE_TYPE = "favorite";
+    private FavoritesViewModel viewModel;
 
 
     // Stored data for the favorites
@@ -66,9 +74,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         errorMessage = findViewById(R.id.empty_view);
         noFavoritesView = findViewById(R.id.empty_view_no_favorites);
         loadingIndicator = findViewById(R.id.loading_indicator);
-        sortBy = "http://api.themoviedb.org/3/movie/popular?api_key=b1d3802dbb5542cb1aaaab6d85d9d5ae";
-        //TODO 6: Settup observe for live data for getFavorites from ViewModel
+        sortBy = "http://api.themoviedb.org/3/movie/popular?api_key=";
+
+        //TODO 6: Settup observe for live data for getFavorites from ViewModel here?
+
         getMovies();
+        setupMainViewModel();
+        subscribeToModel();
+
     }
 
 
@@ -114,47 +127,63 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         if (id == R.id.sort_favorites) {
             sortBy = SORT_BY_FAVORITES;
             getFavorites();
+            //calls UI to display list of favorites
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    //TODO 11: get ViewModel working with correct variables
+
+    private void setupMainViewModel(){
+        viewModel = ViewModelProviders.of(this).get(FavoritesViewModel.class);
+    }
+
+    private void subscribeToModel() {
+        viewModel.getFavorites().observe(this, new Observer<List<FavoritesRoomObject>>() {
+            @Override
+            public void onChanged(@Nullable List<FavoritesRoomObject> movies) {
+                mFavoriteMovies = movies;
+                if (mFavoriteMovies.equals(FAVORITE_TYPE)) {
+                    Log.d(LOG_TAG, "Updating list of favorite movies from LiveData in ViewModel");
+                    movieAdapter.setMovies(mMovies);
+                    movieGrid.setAdapter(movieAdapter);
+                }
+            }
+        });
+    }
+
         private void getFavorites() {
 
-            FavoritesDbSingle movieDb = (FavoritesDbSingle) FavoritesDbSingle.getInstance(this);
-
-            LiveData<List<FavoritesRoomObject>> favoriteMoviesList = movieDb.movieDao().getAllFavMovies();
-            //TODO 8: Add observer here?
+            //TODO 8 : where do I add favoriteMoviesList to get and display the data?
             FavoritesViewModel favoritesViewModel = ViewModelProviders.of(this).get(FavoritesViewModel.class);
             favoritesViewModel.getFavorites().observe(this, new Observer<List<FavoritesRoomObject>>() {
                 @Override
                 public void onChanged(@Nullable List<FavoritesRoomObject> favoritesRoomObjects) {
+                    ArrayList<Movie> favMovies = new ArrayList<>();
+
+                    for (FavoritesRoomObject favoritesRoomObject : favoritesRoomObjects) {
+                        favMovies.add(new Movie(favoritesRoomObject));
+                    }
+
+                    movieAdapter.setMovies(favMovies);
+                    movieAdapter.notifyDataSetChanged();
+
+                    if (favMovies.isEmpty()) {
+
+                        // GOT GUIDANCE FROM STEVE (AND) From Slack on how to correctly display when
+                        // There are no favorites.
+
+                        noFavoritesView.setVisibility(View.VISIBLE);
+                        movieGrid.setVisibility(View.INVISIBLE);
+                        errorMessage.setVisibility(View.INVISIBLE);
+
+                        loadingIndicator.setVisibility(View.INVISIBLE);
+                    }
 
                 }
             });
-
-
-            ArrayList<Movie> favMovies = new ArrayList<>();
-
-            for (FavoritesRoomObject favoritesRoomObject : favoriteMoviesList.getValue()) {
-                favMovies.add(new Movie(favoritesRoomObject));
-            }
-
-            movieAdapter.setMovies(favMovies);
-            movieAdapter.notifyDataSetChanged();
-
-        if (favMovies == null) {
-
-            // GOT GUIDANCE FROM STEVE (AND) From Slack on how to correctly display when
-            // There are no favorites.
-
-            noFavoritesView.setVisibility(View.VISIBLE);
-            movieGrid.setVisibility(View.INVISIBLE);
-            errorMessage.setVisibility(View.INVISIBLE);
-
-            loadingIndicator.setVisibility(View.INVISIBLE);
-        }
     }
 
         private void getMovies() {
