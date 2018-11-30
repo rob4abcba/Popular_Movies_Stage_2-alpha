@@ -50,8 +50,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     private TextView errorMessage;
     private TextView noFavoritesView;
     private ProgressBar loadingIndicator;
-    private static final String SORT_BY_MOST_POPULAR = "http://api.themoviedb.org/3/movie/popular?api_key=";
-    private static final String SORT_BY_HIGHEST_RATED = "http://api.themoviedb.org/3/movie/top_rated?api_key=";
+    private static final String SORT_BY_MOST_POPULAR = "http://api.themoviedb.org/3/movie/popular?api_key=" + BuildConfig.THE_MOVIE_DB_API_KEY;
+    private static final String SORT_BY_HIGHEST_RATED = "http://api.themoviedb.org/3/movie/top_rated?api_key=" + BuildConfig.THE_MOVIE_DB_API_KEY;
     private static final String SORT_BY_FAVORITES = "";
 
     private List<FavoritesRoomObject> mFavoriteMovies;
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         errorMessage = findViewById(R.id.empty_view);
         noFavoritesView = findViewById(R.id.empty_view_no_favorites);
         loadingIndicator = findViewById(R.id.loading_indicator);
-        sortBy = "http://api.themoviedb.org/3/movie/popular?api_key=";
+        sortBy = "http://api.themoviedb.org/3/movie/popular?api_key=" + BuildConfig.THE_MOVIE_DB_API_KEY;
 
         //TODO 6: Settup observe for live data for getFavorites from ViewModel here?
 
