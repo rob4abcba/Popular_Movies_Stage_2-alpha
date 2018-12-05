@@ -88,7 +88,6 @@ public class Details extends AppCompatActivity {
         vote.setText(voteAverage);
         TextView overview = findViewById(R.id.summary_text_view);
         overview.setText(movie.getOverview());
-        // TODO 9: Change to this to a Dao get findById or variable?
         mId = movie.getID();
         reviewCounter = 0;
         mFavoriteButton = findViewById(R.id.save_button);
@@ -115,7 +114,7 @@ public class Details extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                //boolean favoriteExists = new favoriteExists().execute(mId);
+                new favoriteExists().execute(mId);
 
                 if (favoriteExists) {
                     movieDb.movieDao().delete(movieDb.movieDao().findById(Integer.parseInt(mId)));
@@ -279,8 +278,6 @@ public class Details extends AppCompatActivity {
     }
 
     // check to see if movie has been selected as favorite
-    //TODO 4: Change this to Room
-
 
       public class favoriteExists extends AsyncTask<String, Void, Boolean>{
 
